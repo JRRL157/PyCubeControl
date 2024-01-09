@@ -23,4 +23,4 @@ class PID:
         self.output = proportional + self.integral + derivative
 
     def get_output(self):
-        return np.array([-1 if x <= -8192 else (1 if x >= 8192 else x / 8192.0) for x in self.output])
+        return np.array([-12 if x <= -8192 else (12 if x >= 8192 else x / 8192.0) for x in self.output])
