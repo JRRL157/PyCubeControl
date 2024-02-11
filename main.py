@@ -5,6 +5,7 @@ from actuator import ReactionWheel
 from comparator import Comparator
 from controller import PID
 from dynamics import Dynamics
+from kinematics import Kinematics
 
 try:
     import sim
@@ -14,13 +15,16 @@ except:
 
 # Constants
 dt = np.float64(0.0001)
-J = np.array([[0.002169666666667, 0, 0], [0, 0.002169666666667, 0], [0, 0, 0.002169666666667]])
+J = np.array([[0.002169666666667, 0, 0],
+              [0, 0.002169666666667, 0],
+              [0, 0, 0.002169666666667]])
 
 # Classes declaration
 pid = PID(kp=np.float64(1.0), ki=np.float64(1.0), kd=np.float64(0.0), dt=dt)
-dynamics = Dynamics(J, omega=np.array([3, 1, 2], dtype=np.float64), dt=dt)
+dynamics = Dynamics(J, omega=np.array([10, 5, 10], dtype=np.float64), dt=dt)
 comparator = Comparator(input1_sgn=True, input2_sgn=False)
 reaction_wheel = ReactionWheel(dt=dt)
+kinematics = Kinematics(dt, np.array([0, 0, 0, 1], dtype=np.float64))
 
 # Reference
 SP = np.array([0.0, 0.0, 0.0], dtype=np.float64)
@@ -47,20 +51,23 @@ ret, motor_y = sim.simxGetObjectHandle(clientID, "motor_y", sim.simx_opmode_ones
 print(ret)
 ret, motor_z = sim.simxGetObjectHandle(clientID, "motor_z", sim.simx_opmode_oneshot_wait)
 print(ret)
-ret, cubesat = sim.simxGetObjectHandle(clientID,"cubesat",sim.simx_opmode_oneshot_wait)
+ret, cubesat = sim.simxGetObjectHandle(clientID, "cubesat", sim.simx_opmode_oneshot_wait)
 print(ret)
 
 while clientID != -1:
     comparator.compare(SP, dynamics.omega)
     pid.step(comparator.output)
     reaction_wheel.update(pid.output)
+
+    dynamics.step(angular_momentum=-reaction_wheel.momentum, angular_torque=-reaction_wheel.torque,
+                  external_torque=np.array([0, 0, 0]))
+    kinematics.update_quaternion(dynamics.omega)
     sim.simxSetJointTargetVelocity(clientID, motor_x, reaction_wheel.omega[0], sim.simx_opmode_streaming)
     sim.simxSetJointTargetVelocity(clientID, motor_y, reaction_wheel.omega[1], sim.simx_opmode_streaming)
-    sim.simxSetJointTargetVelocity(clientID, motor_y, reaction_wheel.omega[2], sim.simx_opmode_streaming)
-
-    dynamics.step(angular_momentum=-reaction_wheel.momentum,
-                  angular_torque=-reaction_wheel.torque,
-                  external_torque=np.array([0, 0, 0]))
+    sim.simxSetJointTargetVelocity(clientID, motor_z, reaction_wheel.omega[2], sim.simx_opmode_streaming)
+    sim.simxSetObjectQuaternion(clientID, cubesat, quaternion=kinematics.q.tolist(),
+                                relativeToObjectHandle=-1,
+                                operationMode=sim.simx_opmode_streaming)
 
     if n <= 10:
         time_points.append(n * dt)
