@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from actuator import ReactionWheel
+from actuator import ReactionWheel, Magnetorquer
 from comparator import Comparator
-from controller import PID
+from controller import PID, BDot
 from dynamics import Dynamics
 from kinematics import Kinematics
+from magnetic_field import EarthMagneticFieldSimplified
 
 try:
     import sim
@@ -21,10 +22,13 @@ J = np.array([[0.002169666666667, 0, 0],
 
 # Classes declaration
 pid = PID(kp=np.float64(1.0), ki=np.float64(1.0), kd=np.float64(0.0), dt=dt)
+bdot = BDot(kp=1, num=100, area=1, MAX_CURRENT=1)
 dynamics = Dynamics(J, omega=np.array([10, 5, 10], dtype=np.float64), dt=dt)
 comparator = Comparator(input1_sgn=True, input2_sgn=False)
 reaction_wheel = ReactionWheel(dt=dt)
+magnetorquer = Magnetorquer(num=100, area=1)
 kinematics = Kinematics(dt, np.array([0, 0, 0, 1], dtype=np.float64))
+earth_magnetic_field = EarthMagneticFieldSimplified(t0=np.float64(0), dt=dt)
 
 # Reference
 SP = np.array([0.0, 0.0, 0.0], dtype=np.float64)
@@ -46,22 +50,34 @@ else:
     print('Failed connecting to remote API server')
 
 ret, motor_x = sim.simxGetObjectHandle(clientID, "motor_x", sim.simx_opmode_oneshot_wait)
-print(ret)
 ret, motor_y = sim.simxGetObjectHandle(clientID, "motor_y", sim.simx_opmode_oneshot_wait)
-print(ret)
 ret, motor_z = sim.simxGetObjectHandle(clientID, "motor_z", sim.simx_opmode_oneshot_wait)
-print(ret)
 ret, cubesat = sim.simxGetObjectHandle(clientID, "cubesat", sim.simx_opmode_oneshot_wait)
-print(ret)
 
 while clientID != -1:
-    comparator.compare(SP, dynamics.omega)
-    pid.step(comparator.output)
-    reaction_wheel.update(pid.output)
+    # Updating Earth Magnetic Field from Inertial Frame
+    earth_magnetic_field.update_inertial_frame()
 
+    # Feedback error
+    comparator.compare(SP, dynamics.omega)
+
+    # Controllers
+    pid.step(comparator.output)
+    bdot.update(comparator.output, kinematics.b_body)
+
+    # Actuators
+    reaction_wheel.update(pid.voltage)
+    magnetorquer.update(bdot.current, kinematics.b_body)
+
+    # Spacecraft Dynamics
     dynamics.step(angular_momentum=-reaction_wheel.momentum, angular_torque=-reaction_wheel.torque,
-                  external_torque=np.array([0, 0, 0]))
+                  external_torque=magnetorquer.torque)
+
+    # Kinematics
     kinematics.update_quaternion(dynamics.omega)
+    kinematics.update_magnetic_field_body_frame(earth_magnetic_field.b)
+
+    # CoppeliaSim Objects commands
     sim.simxSetJointTargetVelocity(clientID, motor_x, reaction_wheel.omega[0], sim.simx_opmode_streaming)
     sim.simxSetJointTargetVelocity(clientID, motor_y, reaction_wheel.omega[1], sim.simx_opmode_streaming)
     sim.simxSetJointTargetVelocity(clientID, motor_z, reaction_wheel.omega[2], sim.simx_opmode_streaming)
@@ -72,7 +88,7 @@ while clientID != -1:
     if n <= 10:
         time_points.append(n * dt)
         error.append(comparator.output)
-        pidOutput.append(pid.output)
+        pidOutput.append(pid.voltage)
         rwOmega.append(reaction_wheel.omega)
         cube_omega.append(dynamics.omega)
 
@@ -80,7 +96,7 @@ while clientID != -1:
         if n % 1000 == 0:
             time_points.append(n * dt)
             error.append(comparator.output)
-            pidOutput.append(pid.output)
+            pidOutput.append(pid.voltage)
             rwOmega.append(reaction_wheel.omega)
             cube_omega.append(dynamics.omega)
             print("N = ", n, ", error = ", error[-1])

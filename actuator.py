@@ -28,7 +28,7 @@ class ReactionWheel:
         for i in range(0, 3):
             dOmegadt[i] = (-self.Bm[i] / self.Jm[i]) * self.omega[i] + (self.Kt[i] / self.Jm[i]) * self.current[i]
             dCurrentdt[i] = (-self.Ke[i] / self.L[i]) * self.omega[i] + (-self.R[i] / self.L[i]) * self.current[i] + (
-                        1 / self.L[i]) * Va[i]
+                    1 / self.L[i]) * Va[i]
 
         self.domegadt = dOmegadt
         self.torque = self.Jm * self.domegadt
@@ -39,10 +39,12 @@ class ReactionWheel:
 
 
 class Magnetorquer:
-    def __init__(self, N=1000, A=1):
-        self.N = N
-        self.A = A
+    def __init__(self, num: np.float64 = 100, area: np.float64 = 1):
+        self.num = num
+        self.area = area
+        self.torque = np.array([0,0,0],dtype=np.float64)
 
-    def update(self,I,B):
-        self.m = self.N*I*self.A
-        self.torque = self.m * B
+    def update(self, current, B):
+        prod1: np.ndarray = (self.num * self.area) * current
+        print(prod1.shape)
+        self.torque = np.cross(prod1, B)
