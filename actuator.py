@@ -46,5 +46,4 @@ class Magnetorquer:
 
     def update(self, current, B):
         prod1: np.ndarray = (self.num * self.area) * current
-        print(prod1.shape)
         self.torque = np.cross(prod1, B)

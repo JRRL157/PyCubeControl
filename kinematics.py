@@ -47,4 +47,3 @@ class Kinematics:
 
     def update_magnetic_field_body_frame(self, b):
         self.b_body = ref_frameA_to_ref_frameB(b, self.q)
-        print("B Body Frame: ", self.b_body)

@@ -70,7 +70,7 @@ while clientID != -1:
     magnetorquer.update(bdot.current, kinematics.b_body)
 
     # Spacecraft Dynamics
-    dynamics.step(angular_momentum=-reaction_wheel.momentum, angular_torque=-reaction_wheel.torque,
+    dynamics.step(angular_momentum=np.array([0, 0, 0]), angular_torque=np.array([0, 0, 0]),
                   external_torque=magnetorquer.torque)
 
     # Kinematics
@@ -103,7 +103,7 @@ while clientID != -1:
     except:
         None
 
-    if np.abs(error[-1][0]) <= 1e-3 or n == 1000000:
+    if np.abs(error[-1][0]) <= 1e-3:
         break
 
     n += 1
