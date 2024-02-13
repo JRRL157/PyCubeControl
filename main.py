@@ -11,8 +11,7 @@ from magnetic_field import EarthMagneticFieldSimplified
 try:
     import sim
 except:
-    print(
-        '"sim.py" could not be imported. Check whether "sim.py" or the remoteApi library could not be found. Make sure both are in the same folder as this file')
+    print('"sim.py" could not be imported.')
 
 # Constants
 dt = np.float64(0.0001)
