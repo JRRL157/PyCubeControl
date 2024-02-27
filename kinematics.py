@@ -14,6 +14,28 @@ def quaternion_inverse(q):
     return (1 / (np.power(np.linalg.norm(q), 2))) * quaternion_conjugate(q)
 
 
+def quaternion_multiply(q1, q2):
+    """
+    Multiply two quaternions q1 and q2.
+
+    Parameters:
+        q1 (numpy.array): Quaternion represented as a numpy array [x, y, z, w].
+        q2 (numpy.array): Quaternion represented as a numpy array [x, y, z, w].
+
+    Returns:
+        numpy.array: Resultant quaternion after multiplication.
+    """
+    # Extract components
+    w1, x1, y1, z1 = q1
+    w2, x2, y2, z2 = q2
+
+    # Calculate the multiplication
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    y = w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2
+    z = w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2
+
+    return np.array([x, y, z, w],dtype=np.float64)
 def ref_frameA_to_ref_frameB(v, q):
     q_inv = quaternion_conjugate(q)
 
