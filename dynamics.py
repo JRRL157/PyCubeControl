@@ -8,7 +8,7 @@ class Dynamics:
     :dt: time interval
     """
 
-    def __init__(self, J: np.ndarray, omega: np.ndarray, dt: np.float64):
+    def __init__(self, J,omega,dt):
         self.J = J
         self.J_inv = np.linalg.inv(J)
         self.omega = omega
@@ -22,4 +22,8 @@ class Dynamics:
 
         domega_dt = np.dot(self.J_inv, addition)
         # Integration
+        self.omega += self.dt * domega_dt
+
+    def step_linear(self, angular_momentum: np.ndarray, angular_torque: np.ndarray, external_torque: np.ndarray):
+        domega_dt = np.dot(self.J_inv, external_torque - angular_torque)
         self.omega += self.dt * domega_dt

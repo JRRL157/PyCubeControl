@@ -5,8 +5,8 @@ import numpy as np
 
 class EarthMagneticFieldSimplified:
 
-    def __init__(self, t0: np.float64 = 0, dt: np.float64 = 1e-3):
-        self.b = np.array([0, 0, 0], dtype=np.float64)
+    def __init__(self, t0:  = 0, dt:  = 1e-3):
+        self.b = np.array([0.0,0.0,0.0])
         self.dt = dt
         self.t = t0
 

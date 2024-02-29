@@ -14,23 +14,23 @@ except:
     print('"sim.py" could not be imported.')
 
 # Constants
-dt = np.float64(0.0001)
+dt = 0.0001
 J = np.array([[0.002169666666667, 0, 0],
               [0, 0.002169666666667, 0],
               [0, 0, 0.002169666666667]])
 
 # Classes declaration
-pid = PID(kp=np.float64(1.0), ki=np.float64(1.0), kd=np.float64(0.05), dt=dt)
+pid = PID(kp=1.0, ki=1.0, kd=0.05, dt=dt)
 bdot = BDot(kp=1, num=100, area=1, MAX_CURRENT=1)
-dynamics = Dynamics(J, omega=np.array([25, 5, 1], dtype=np.float64), dt=dt)
+dynamics = Dynamics(J, omega=np.array([25, 5, 1]), dt=dt)
 comparator = Comparator(input1_sgn=True, input2_sgn=False)
 reaction_wheel = ReactionWheel(Kt=0.1, Jm=0.01, L=0.5, R=1, Ke=0.1, dt=dt)
 magnetorquer = Magnetorquer(num=100, area=1)
-kinematics = Kinematics(dt, np.array([0, 0, 0, 1], dtype=np.float64))
-earth_magnetic_field = EarthMagneticFieldSimplified(t0=np.float64(0), dt=dt)
+kinematics = Kinematics(dt, np.array([0, 0, 0, 1]))
+earth_magnetic_field = EarthMagneticFieldSimplified(t0=0, dt=dt)
 
 # Reference
-SP = np.array([0.0, 0.0, 0.0], dtype=np.float64)
+SP = np.array([0.0, 0.0, 0.0])
 
 n = 0
 m = 1000

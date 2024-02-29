@@ -7,7 +7,7 @@ import numpy as np
 
 
 def quaternion_conjugate(q):
-    return np.array([-q[0], -q[1], -q[2], q[3]], dtype=np.float64)
+    return np.array([-q[0], -q[1], -q[2], q[3]])
 
 
 def quaternion_inverse(q):
@@ -35,7 +35,7 @@ def quaternion_multiply(q1, q2):
     y = w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2
     z = w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2
 
-    return np.array([x, y, z, w],dtype=np.float64)
+    return np.array([x, y, z, w])
 def ref_frameA_to_ref_frameB(v, q):
     q_inv = quaternion_conjugate(q)
 
@@ -52,11 +52,11 @@ def ref_frameA_to_ref_frameB(v, q):
 
 class Kinematics:
 
-    def __init__(self, dt: np.float64, q: np.ndarray = np.array([0, 0, 0, 1])):
+    def __init__(self, dt , q: np.ndarray = np.array([0, 0, 0, 1])):
         self.dt = dt
         self.q = q
-        self.dqdt = np.array([0, 0, 0, 1], dtype=np.float64)
-        self.b_body = np.array([0.01, 0.01, 0.01], dtype=np.float64)
+        self.dqdt = np.array([0, 0, 0, 1])
+        self.b_body = np.array([0.01, 0.01, 0.01])
 
     def update_quaternion(self, w):
         skew_matrix_omega = np.array([[0, -w[0], -w[1], -w[2]],

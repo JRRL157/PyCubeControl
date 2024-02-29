@@ -13,20 +13,20 @@ except:
     print('"sim.py" could not be imported.')
 
 # Constants
-dt = np.float64(1e-2)
+dt = 10e-2
 J = np.array([[0.002169666666667, 0, 0],
               [0, 0.002169666666667, 0],
               [0, 0, 0.002169666666667]])
 
 # Classes declaration
-pid = PID(kp=np.float64(84.774), ki=np.float64(0.0), kd=np.float64(18.7096218), dt=dt)
-dynamics = Dynamics(J, omega=np.array([2, 5, 2], dtype=np.float64), dt=dt)
+pid = PID(kp=84.774, ki=0.00, kd=18.7096218, N=100, dt=dt)
+dynamics = Dynamics(J, omega=np.array([2.0, 5.0, 2.0]), dt=dt)
 comparator = Comparator(input1_sgn=True, input2_sgn=False)
 reaction_wheel = ReactionWheel2(Jm=0.0015, Jr=3e-6, Kb=9.22e-04, Ki=0.0264, Bm=0.0088, L=0.48, R=7, dt=dt)
-kinematics = Kinematics(dt, np.array([0, 0, 0, 1], dtype=np.float64))
+kinematics = Kinematics(dt=dt, q=np.array([0.0, 0.0, 0.0, 1]))
 
 # Reference
-SP = np.array([0.0, 0.0, 0.0], dtype=np.float64)
+SP = np.array([0.0, 0.0, 0.0])
 
 n = 0
 m = 1000
@@ -62,7 +62,7 @@ while clientID != -1:
 
     # Spacecraft Dynamics
     dynamics.step(angular_momentum=reaction_wheel.momentum, angular_torque=reaction_wheel.torque,
-                  external_torque=np.array([0, 0, 0], dtype=np.float64))
+                  external_torque=np.array([0.0, 0.0, 0.0]))
 
     # Kinematics
     kinematics.update_quaternion(dynamics.omega)

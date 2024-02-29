@@ -12,19 +12,19 @@ except:
     print('"sim.py" could not be imported.')
 
 # Constants
-dt = np.float64(10e-3)
+dt = 10e-3
 J = np.array([[0.002169666666667, 0, 0],
               [0, 0.002169666666667, 0],
               [0, 0, 0.002169666666667]])
 
 # Classes declaration
 lqr_stabilization = LQR_Stabilization(K=np.array([0.4739, -49.5965, -69.7886]))
-dynamics = Dynamics(J, omega=np.array([1, 0.5, 2], dtype=np.float64), dt=dt)
+dynamics = Dynamics(J, omega=np.array([1, 0.5, 2]), dt=dt)
 reaction_wheel = ReactionWheel(Kt=0.0264, Jm=0.0015, L=0.48, R=7, Ke=9.220000000000001e-04, dt=dt)
-kinematics = Kinematics(dt, np.array([0, 0, 0, 1], dtype=np.float64))
+kinematics = Kinematics(dt, np.array([0, 0, 0, 1]))
 
 # Reference
-SP = np.array([0.0, 0.0, 0.0], dtype=np.float64)
+SP = np.array([0.0, 0.0, 0.0])
 
 n = 0
 m = 1000
@@ -60,7 +60,7 @@ while clientID != -1:
 
     # Spacecraft Dynamics
     dynamics.step(angular_momentum=reaction_wheel.momentum, angular_torque=reaction_wheel.torque,
-                  external_torque=np.array([0, 0, 0]))
+                  external_torque=np.array([0.0,0.0,0.0]))
 
     # Kinematics
     kinematics.update_quaternion(dynamics.omega)
